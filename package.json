@@ -1,0 +1,25 @@
+{
+  "author": "Ableton",
+  "license": "MIT",
+  "name": "@ableton/web-audio-sequencing",
+  "version": "1.0.0",
+  "description": "Sequencing utilities for Web Audio API",
+  "type": "module",
+  "exports": "./dist/index.js",
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest",
+    "examples": "npx live-server --open=./examples.html"
+  },
+  "keywords": [
+    "sequencing",
+    "scheduling",
+    "audio"
+  ],
+  "packageManager": "pnpm@10.18.1",
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  }
+}

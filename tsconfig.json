@@ -1,0 +1,13 @@
+{
+  "include": ["src"],
+  "exclude": ["src/**/*.test.ts"],
+  "compilerOptions": {
+    "outDir": "dist",
+    "target": "es6",
+    "declaration": true,
+    "strict": true,
+    "allowImportingTsExtensions": true,
+    "removeComments": true,
+    "rewriteRelativeImportExtensions": true
+  }
+}

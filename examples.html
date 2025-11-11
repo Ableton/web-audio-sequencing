@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sequencing examples</title>
+    <link rel="stylesheet" href="./examples/style.css" />
+  </head>
+  <body>
+    <script type="importmap">
+      {
+        "imports": {
+          "@ableton/web-audio-sequencing": "../dist/index.js"
+        }
+      }
+    </script>
+    <script type="module">
+      import { run } from "./examples/example-sequencer.js";
+      import { BEATS_PER_STEP } from "./examples/shared/constants.js";
+      import { NoteEventStage } from "@ableton/web-audio-sequencing";
+
+      const audioContext = new AudioContext();
+      let cleanupFx = undefined;
+      const examples = {
+        basicSequencer: {
+          lanes: [[0, 13]],
+          clips: [
+            {
+              id: "clip",
+              startInTransportBeats: 0,
+              endInTransportBeats: 16 * BEATS_PER_STEP,
+              activeRangeStartBeatTime: 0,
+              activeRangeEndBeatTime: 16 * BEATS_PER_STEP,
+              shouldLoop: true,
+              events: [],
+            },
+          ],
+          description:
+            "A basic sequencer with a full octave (C3-C4) of pitch lanes over 16 steps. Each step spans 0.25 beats.",
+        },
+        polymetricSequencer: {
+          lanes: [
+            [4, 8],
+            [0, 4],
+          ],
+          clips: [
+            {
+              id: "clip-0",
+              startInTransportBeats: 0,
+              endInTransportBeats: 4,
+              activeRangeStartBeatTime: 0,
+              activeRangeEndBeatTime: 5 * BEATS_PER_STEP,
+              shouldLoop: true,
+              events: [
+                {
+                  noteId: "clip-0-5-0",
+                  stage: NoteEventStage.Start,
+                  beatTime: 0,
+                  data: {
+                    lane: 5,
+                    step: 0,
+                  },
+                },
+                {
+                  noteId: "clip-0-5-0",
+                  stage: NoteEventStage.End,
+                  beatTime: 0.125,
+                  data: {
+                    lane: 5,
+                    step: 0,
+                  },
+                },
+              ],
+            },
+            {
+              id: "clip-1",
+              startInTransportBeats: 0,
+              endInTransportBeats: 16 * BEATS_PER_STEP,
+              activeRangeStartBeatTime: 0,
+              activeRangeEndBeatTime: 7 * BEATS_PER_STEP,
+              shouldLoop: true,
+              events: [
+                {
+                  noteId: "clip-1-1-0",
+                  stage: NoteEventStage.Start,
+                  beatTime: 0,
+                  data: {
+                    lane: 1,
+                    step: 0,
+                  },
+                },
+                {
+                  noteId: "clip-1-1-0",
+                  stage: NoteEventStage.End,
+                  beatTime: 0.125,
+                  data: {
+                    lane: 1,
+                    step: 0,
+                  },
+                },
+              ],
+            },
+          ],
+          description:
+            "The Clip Player supports multiple clips with varying active ranges. This allows for polymeter, seen with two clips below looping at different lengths.",
+        },
+        offsetStart: {
+          lanes: [
+            [1, 2],
+            [0, 1],
+          ],
+          clips: [
+            {
+              id: "clip-0",
+              startInTransportBeats: 0,
+              endInTransportBeats: 16 * BEATS_PER_STEP,
+              activeRangeStartBeatTime: 0,
+              activeRangeEndBeatTime: 16 * BEATS_PER_STEP,
+              shouldLoop: true,
+              events: [
+                {
+                  noteId: "clip-0-2-0",
+                  stage: NoteEventStage.Start,
+                  beatTime: 0,
+                  data: {
+                    lane: 2,
+                    step: 0,
+                  },
+                },
+                {
+                  noteId: "clip-0-2-0",
+                  stage: NoteEventStage.End,
+                  beatTime: 0.125,
+                  data: {
+                    lane: 2,
+                    step: 0,
+                  },
+                },
+              ],
+            },
+            {
+              id: "clip-1",
+              startInTransportBeats: 8 * BEATS_PER_STEP,
+              endInTransportBeats: 16 * BEATS_PER_STEP,
+              activeRangeStartBeatTime: 0,
+              activeRangeEndBeatTime: 16 * BEATS_PER_STEP,
+              shouldLoop: true,
+              events: [
+                {
+                  noteId: "clip-1-1-0",
+                  stage: NoteEventStage.Start,
+                  beatTime: 0,
+                  data: {
+                    lane: 1,
+                    step: 0,
+                  },
+                },
+                {
+                  noteId: "clip-1-1-0",
+                  stage: NoteEventStage.End,
+                  beatTime: 0.125,
+                  data: {
+                    lane: 1,
+                    step: 0,
+                  },
+                },
+              ],
+            },
+          ],
+          description:
+            "The Clip Player supports multiple clips with varying start times. The second clip starts 2 beats after the first. This is helpful for arranging clips across a timeline.",
+        },
+        overlappingNotes: {
+          description:
+            "Events that overlap the active range boundary can be ended or wrapped into the next loop. Here they are ended when the playhead reaches the loop end brace.",
+          lanes: [[0, 13]],
+          durationOptions: [0.25, 0.5, 0.75, 1],
+          clips: [
+            {
+              id: "clip-0",
+              startInTransportBeats: 0,
+              endInTransportBeats: 16 * BEATS_PER_STEP,
+              activeRangeStartBeatTime: 0,
+              activeRangeEndBeatTime: 12 * BEATS_PER_STEP,
+              shouldLoop: true,
+              events: [
+                {
+                  noteId: "clip-0-1-7",
+                  stage: NoteEventStage.Start,
+                  beatTime: 1.75,
+                  data: {
+                    lane: 1,
+                    step: 7,
+                  },
+                },
+                {
+                  noteId: "clip-0-1-7",
+                  stage: NoteEventStage.End,
+                  beatTime: 2.25,
+                  data: {
+                    lane: 1,
+                    step: 7,
+                  },
+                },
+                {
+                  noteId: "clip-0-13-0",
+                  stage: NoteEventStage.Start,
+                  beatTime: 0,
+                  data: {
+                    lane: 13,
+                    step: 0,
+                  },
+                },
+                {
+                  noteId: "clip-0-13-0",
+                  stage: NoteEventStage.End,
+                  beatTime: 0.25,
+                  data: {
+                    lane: 13,
+                    step: 0,
+                  },
+                },
+                {
+                  noteId: "clip-0-1-0",
+                  stage: NoteEventStage.Start,
+                  beatTime: 0,
+                  data: {
+                    lane: 1,
+                    step: 0,
+                  },
+                },
+                {
+                  noteId: "clip-0-1-0",
+                  stage: NoteEventStage.End,
+                  beatTime: 0.25,
+                  data: {
+                    lane: 1,
+                    step: 0,
+                  },
+                },
+                {
+                  noteId: "clip-0-3-2",
+                  stage: NoteEventStage.Start,
+                  beatTime: 0.5,
+                  data: {
+                    lane: 3,
+                    step: 2,
+                  },
+                },
+                {
+                  noteId: "clip-0-3-2",
+                  stage: NoteEventStage.End,
+                  beatTime: 1.25,
+                  data: {
+                    lane: 3,
+                    step: 2,
+                  },
+                },
+                {
+                  noteId: "clip-0-4-4",
+                  stage: NoteEventStage.Start,
+                  beatTime: 1,
+                  data: {
+                    lane: 4,
+                    step: 4,
+                  },
+                },
+                {
+                  noteId: "clip-0-4-4",
+                  stage: NoteEventStage.End,
+                  beatTime: 1.75,
+                  data: {
+                    lane: 4,
+                    step: 4,
+                  },
+                },
+                {
+                  noteId: "clip-0-11-10",
+                  stage: NoteEventStage.Start,
+                  beatTime: 2.5,
+                  data: {
+                    lane: 11,
+                    step: 10,
+                  },
+                },
+                {
+                  noteId: "clip-0-11-10",
+                  stage: NoteEventStage.End,
+                  beatTime: 3.5,
+                  data: {
+                    lane: 11,
+                    step: 10,
+                  },
+                },
+                {
+                  noteId: "clip-0-9-8",
+                  stage: NoteEventStage.Start,
+                  beatTime: 2,
+                  data: {
+                    lane: 9,
+                    step: 8,
+                  },
+                },
+                {
+                  noteId: "clip-0-9-8",
+                  stage: NoteEventStage.End,
+                  beatTime: 2.25,
+                  data: {
+                    lane: 9,
+                    step: 8,
+                  },
+                },
+              ],
+            },
+          ],
+        },
+        perNoteUpdates: {
+          description:
+            "Updates can be associated with a particular note. This allows you to articulate a note's playback however you'd like. In this example, each note changes in pitch (downwards) as it plays. The pitch updates happen instantaneously, creating some fun chiptune vibes!",
+          lanes: [[0, 5]],
+          durationOptions: [0.25, 0.5, 0.75, 1],
+          insertPerNoteUpdates: true,
+          clips: [
+            {
+              id: "clip-0",
+              startInTransportBeats: 0,
+              endInTransportBeats: 16 * BEATS_PER_STEP,
+              activeRangeStartBeatTime: 0,
+              activeRangeEndBeatTime: 16 * BEATS_PER_STEP,
+              shouldLoop: true,
+              events: [
+                {
+                  noteId: "clip-0-2-0",
+                  stage: NoteEventStage.Start,
+                  beatTime: 0,
+                  data: {
+                    lane: 2,
+                    step: 0,
+                  },
+                },
+                {
+                  noteId: "clip-0-2-0",
+                  stage: NoteEventStage.Update,
+                  beatTime: 0,
+                  data: {
+                    pitchOffsetInSemitones: 12,
+                  },
+                },
+                {
+                  noteId: "clip-0-2-0",
+                  stage: NoteEventStage.Update,
+                  beatTime: 0.25 * BEATS_PER_STEP,
+                  data: {
+                    pitchOffsetInSemitones: 9,
+                  },
+                },
+                {
+                  noteId: "clip-0-2-0",
+                  stage: NoteEventStage.Update,
+                  beatTime: 0.5 * BEATS_PER_STEP,
+                  data: {
+                    pitchOffsetInSemitones: 6,
+                  },
+                },
+                {
+                  noteId: "clip-0-2-0",
+                  stage: NoteEventStage.Update,
+                  beatTime: 0.75 * BEATS_PER_STEP,
+                  data: {
+                    pitchOffsetInSemitones: 3,
+                  },
+                },
+                {
+                  noteId: "clip-0-2-0",
+                  stage: NoteEventStage.Update,
+                  beatTime: 1 * BEATS_PER_STEP,
+                  data: {
+                    pitchOffsetInSemitones: 0,
+                  },
+                },
+                {
+                  noteId: "clip-0-2-0",
+                  stage: NoteEventStage.End,
+                  beatTime: 1 * BEATS_PER_STEP,
+                  data: {
+                    lane: 2,
+                    step: 0,
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      };
+
+      const runFx = (name) => {
+        if (!name in examples) return;
+        if (cleanupFx !== undefined) cleanupFx();
+        document.querySelector("#app").innerHTML = "";
+        cleanupFx = run(examples[name], audioContext);
+        document.querySelector("#description").innerHTML =
+          examples[name].description;
+      };
+
+      document.addEventListener("DOMContentLoaded", () => {
+        document.querySelector("select").addEventListener("change", (e) => {
+          const value = e.currentTarget.value;
+          runFx(value);
+        });
+        makeGestureOnElementResumeAudioContext(document.body);
+      });
+
+      audioContext.addEventListener("statechange", function () {
+        console.log(
+          `Audio context transitioned to ${audioContext.state} state.`,
+        );
+        switch (audioContext.state) {
+          case "interrupted":
+            makeGestureOnElementResumeAudioContext(document.body);
+            break;
+        }
+      });
+
+      function makeGestureOnElementResumeAudioContext(element) {
+        const abortController = new AbortController();
+        function resumeAudioContext() {
+          audioContext.resume().then(() => {
+            abortController.abort();
+          });
+        }
+
+        [
+          "keydown",
+          "keyup",
+          "pointerdown",
+          "pointerup",
+          "touchstart",
+          "touchend",
+          "mousedown",
+          "mouseup",
+          "click",
+        ].forEach((t) => {
+          element.addEventListener(t, resumeAudioContext, {
+            signal: abortController.signal,
+            capture: true,
+          });
+        });
+      }
+
+      runFx("basicSequencer");
+    </script>
+    <main>
+      <h1>Sequencing examples</h1>
+      <p>
+        On this page are a selection of examples that demonstrate different
+        elements of the clip sequencing feature set. For a general overview, the
+        <a href="https://github.com/ableton/web-audio-sequencing">README</a> is
+        a good place to start.
+      </p>
+      <h2>How to use</h2>
+      <p>
+        Click on the buttons in the step sequencer or use arrow keys to
+        navigate. Use Enter key to toggle note on or off.
+      </p>
+      <div>
+        <label
+          >Example:
+          <select>
+            <option value="basicSequencer">Basic Sequencer</option>
+            <option value="polymetricSequencer">Polymetric Sequencers</option>
+            <option value="offsetStart">Offset Start</option>
+            <option value="overlappingNotes">Notes at boundaries</option>
+            <option value="perNoteUpdates">Per-note updates</option>
+          </select>
+        </label>
+        <p id="description"></p>
+      </div>
+      <div id="app"></div>
+    </main>
+  </body>
+</html>
